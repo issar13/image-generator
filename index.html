@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Image Rainfall Effect</title>
+  <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #1a1a1a;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .instruction {
+      color: white;
+      font-family: Arial, sans-serif;
+      font-size: 24px;
+      text-align: center;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    .falling-image {
+      position: absolute;
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 10px;
+      pointer-events: none;
+      animation: fall 10s linear forwards, fadeOut 1s ease-in 9s forwards;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-150px) scale(1) rotate(0deg);
+        opacity: 0.9;
+      }
+      100% {
+        transform: translateY(100vh) scale(var(--scale, 2)) rotate(360deg);
+        opacity: 0.9;
+      }
+    }
+
+    @keyframes fadeOut {
+      0% {
+        opacity: 0.9;
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+
+    .loading {
+      color: white;
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 10px;
+      border-radius: 5px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="instruction">Click anywhere to make images rain!<br>Add your HEIC or JPG images to the 'images' folder</div>
+  <div class="loading">Loading images...</div>
+
+  <!-- Replace this with a real click.mp3 file if preferred -->
+  <audio id="clickSound" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAgD4AAAB9AAACABAAZGF0YQAAAAA=" preload="auto"></audio>
+
+  <script>
+    let imageUrls = ['images/default.jpg'];
+    let loadedImages = new Map();
+    let clickCount = 0;
+    let imagesPerClick = 3;
+
+    async function loadAndConvertImage(url) {
+      if (loadedImages.has(url)) {
+        return loadedImages.get(url);
+      }
+
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+
+        if (url.toLowerCase().endsWith('.heic')) {
+          document.querySelector('.loading').style.display = 'block';
+          const convertedBlob = await heic2any({
+            blob: blob,
+            toType: "image/jpeg",
+            quality: 0.8
+          });
+          document.querySelector('.loading').style.display = 'none';
+          const blobUrl = URL.createObjectURL(convertedBlob);
+          loadedImages.set(url, blobUrl);
+          return blobUrl;
+        } else {
+          const blobUrl = URL.createObjectURL(blob);
+          loadedImages.set(url, blobUrl);
+          return blobUrl;
+        }
+      } catch (error) {
+        console.error('Error loading/converting image:', error);
+        return null;
+      }
+    }
+
+    async function createImage(x) {
+      const img = document.createElement('img');
+      img.className = 'falling-image';
+
+      const selectedUrl = imageUrls[Math.floor(Math.random() * imageUrls.length)];
+      const processedUrl = await loadAndConvertImage(selectedUrl);
+
+      if (processedUrl) {
+        img.src = processedUrl;
+
+        const randomOffset = (Math.random() - 0.5) * 200;
+        img.style.left = (x + randomOffset) + 'px';
+
+        const scales = [2, 4, 6];
+        const selectedScale = scales[Math.floor(Math.random() * scales.length)];
+        img.style.setProperty('--scale', selectedScale);
+
+        document.body.appendChild(img);
+
+        setTimeout(() => {
+          img.remove();
+        }, 10000); // 10 seconds
+      }
+    }
+
+    document.body.addEventListener('click', (e) => {
+      const clickSound = document.getElementById('clickSound');
+      if (clickSound) {
+        try {
+          clickSound.currentTime = 0;
+          clickSound.volume = 0.5;
+          clickSound.play().catch(() => {});
+        } catch (_) {}
+      }
+
+      clickCount++;
+      for (let i = 0; i < imagesPerClick; i++) {
+        setTimeout(() => {
+          createImage(e.clientX);
+        }, i * 100);
+      }
+
+      if (clickCount >= 10) {
+        clickCount = 0;
+        imagesPerClick = 3;
+      } else {
+        imagesPerClick++;
+      }
+    });
+
+    async function updateImageList() {
+      try {
+        const response = await fetch('images/');
+        const files = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(files, 'text/html');
+        const links = doc.querySelectorAll('a');
+
+        imageUrls = Array.from(links)
+          .map(link => link.href)
+          .filter(href =>
+            href.toLowerCase().endsWith('.jpg') ||
+            href.toLowerCase().endsWith('.jpeg') ||
+            href.toLowerCase().endsWith('.heic')
+          );
+
+        if (imageUrls.length === 0) {
+          imageUrls = ['images/default.jpg'];
+        }
+      } catch (error) {
+        console.log('Could not scan directory, using default image');
+      }
+    }
+
+    updateImageList();
+  </script>
+</body>
+</html>
