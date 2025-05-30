@@ -1,199 +1,365 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Image Rainfall Effect</title>
-  <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background-color: #1a1a1a;
-      cursor: pointer;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-
-    .instruction {
-      color: white;
-      font-family: Arial, sans-serif;
-      font-size: 24px;
-      text-align: center;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-      background-color: rgba(0, 0, 0, 0.7);
-      padding: 20px;
-      border-radius: 10px;
-    }
-
-    .falling-image {
-      position: absolute;
-      width: 150px;
-      height: 150px;
-      object-fit: cover;
-      border-radius: 10px;
-      pointer-events: none;
-      animation: fall 10s linear forwards, fadeOut 1s ease-in 9s forwards;
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-    }
-
-    @keyframes fall {
-      0% {
-        transform: translateY(-150px) scale(1) rotate(0deg);
-        opacity: 0.9;
-      }
-      100% {
-        transform: translateY(100vh) scale(var(--scale, 2)) rotate(360deg);
-        opacity: 0.9;
-      }
-    }
-
-    @keyframes fadeOut {
-      0% {
-        opacity: 0.9;
-      }
-      100% {
-        opacity: 0;
-      }
-    }
-
-    .loading {
-      color: white;
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      background-color: rgba(0, 0, 0, 0.7);
-      padding: 10px;
-      border-radius: 5px;
-      display: none;
-    }
-  </style>
-</head>
-<body>
-  <div class="instruction">Click anywhere to make images rain!<br>Add your HEIC or JPG images to the 'images' folder</div>
-  <div class="loading">Loading images...</div>
-
-  <!-- Replace this with a real click.mp3 file if preferred -->
-  <audio id="clickSound" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAgD4AAAB9AAACABAAZGF0YQAAAAA=" preload="auto"></audio>
-
-  <script>
-    let imageUrls = ['images/default.jpg'];
-    let loadedImages = new Map();
-    let clickCount = 0;
-    let imagesPerClick = 3;
-
-    async function loadAndConvertImage(url) {
-      if (loadedImages.has(url)) {
-        return loadedImages.get(url);
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Imraan Rainfall</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background-color: #1a1a1a;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        font-family: Arial, sans-serif;
+        user-select: none;
       }
 
-      try {
-        const response = await fetch(url);
-        const blob = await response.blob();
+      .instruction {
+        color: white;
+        font-size: 24px;
+        text-align: center;
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(0, 0, 0, 0.7);
+        padding: 12px 20px;
+        border-radius: 10px;
+        pointer-events: none;
+      }
 
-        if (url.toLowerCase().endsWith('.heic')) {
-          document.querySelector('.loading').style.display = 'block';
-          const convertedBlob = await heic2any({
-            blob: blob,
-            toType: "image/jpeg",
-            quality: 0.8
-          });
-          document.querySelector('.loading').style.display = 'none';
-          const blobUrl = URL.createObjectURL(convertedBlob);
-          loadedImages.set(url, blobUrl);
-          return blobUrl;
-        } else {
-          const blobUrl = URL.createObjectURL(blob);
-          loadedImages.set(url, blobUrl);
-          return blobUrl;
+      .loading {
+        color: white;
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background-color: rgba(0, 0, 0, 0.7);
+        padding: 10px;
+        border-radius: 5px;
+      }
+
+      .falling-image {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 10px;
+        pointer-events: none;
+        animation: fall 10s linear forwards, fadeOut 1s ease-in 9s forwards;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+      }
+
+      @keyframes fall {
+        0% {
+          transform: translateY(-150px) scale(1) rotate(0deg);
+          opacity: 0.9;
         }
-      } catch (error) {
-        console.error('Error loading/converting image:', error);
-        return null;
+        100% {
+          transform: translateY(100vh) scale(var(--scale, 2)) rotate(360deg);
+          opacity: 0.9;
+        }
       }
-    }
 
-    async function createImage(x) {
-      const img = document.createElement('img');
-      img.className = 'falling-image';
+      @keyframes fadeOut {
+        0% {
+          opacity: 0.9;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
 
-      const selectedUrl = imageUrls[Math.floor(Math.random() * imageUrls.length)];
-      const processedUrl = await loadAndConvertImage(selectedUrl);
+      .key-display {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 160px;
+        color: #ffffff;
+        text-shadow: 0 0 40px #00faff;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s;
+        user-select: none;
+      }
+    </style>
+  </head>
 
-      if (processedUrl) {
-        img.src = processedUrl;
+  <body>
+    <div class="instruction">
+      Press any key or click to make it rain images for Imraan! 🍼
+    </div>
+    <div
+      class="loading"
+      id="loading"
+    >
+      Loading images...
+    </div>
+    <div
+      class="key-display"
+      id="keyDisplay"
+    ></div>
 
-        const randomOffset = (Math.random() - 0.5) * 200;
-        img.style.left = (x + randomOffset) + 'px';
+    <audio
+      id="clickSound"
+      src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAgD4AAAB9AAACABAAZGF0YQAAAAA="
+      preload="auto"
+    ></audio>
 
-        const scales = [2, 4, 6];
-        const selectedScale = scales[Math.floor(Math.random() * scales.length)];
-        img.style.setProperty('--scale', selectedScale);
+    <script>
+      const imageUrls = [
+        "images/20231008_141636.heic",
+        "images/20231008_141636.jpg",
+        "images/20231105_082243.heic",
+        "images/20231105_082243.jpg",
+        "images/20231105_184138.jpg",
+        "images/20231209_150444.heic",
+        "images/20231209_150444.jpg",
+        "images/20231220_214731.heic",
+        "images/20231220_214731.jpg",
+        "images/20231220_214745.heic",
+        "images/20231220_214745.jpg",
+        "images/20231220_214806.heic",
+        "images/20231220_214806.jpg",
+        "images/20231224_154627.heic",
+        "images/20231224_154627.jpg",
+        "images/20231224_154930.heic",
+        "images/20231224_154930.jpg",
+        "images/20231227_212603.heic",
+        "images/20231227_212603.jpg",
+        "images/20231227_212639.heic",
+        "images/20231227_212639.jpg",
+        "images/20231227_212647.heic",
+        "images/20231227_212647.jpg",
+        "images/20231227_212652.heic",
+        "images/20231227_212652.jpg",
+        "images/20231227_212657.heic",
+        "images/20231227_212657.jpg",
+        "images/20231227_212909.heic",
+        "images/20231227_212909.jpg",
+        "images/20231227_212927.heic",
+        "images/20231227_212927.jpg",
+        "images/20231227_213107.heic",
+        "images/20231227_213107.jpg",
+        "images/20231227_213110.heic",
+        "images/20231227_213110.jpg",
+        "images/20231227_213113.heic",
+        "images/20231227_213113.jpg",
+        "images/20231228_162715.jpg",
+        "images/20231228_162800.jpg",
+        "images/20231228_163940.jpg",
+        "images/20231228_164037.jpg",
+        "images/20231229_141518.jpg",
+        "images/20240101_104342.heic",
+        "images/20240101_104342.jpg",
+        "images/20240101_104400.heic",
+        "images/20240101_104400.jpg",
+        "images/20240101_104416.heic",
+        "images/20240101_104416.jpg",
+        "images/20240101_104421.heic",
+        "images/20240101_104421.jpg",
+        "images/20240101_104428.heic",
+        "images/20240101_104428.jpg",
+        "images/20240106_012912.jpg",
+        "images/20240106_012921.jpg",
+        "images/20240106_012929.jpg",
+        "images/20240106_013038.jpg",
+        "images/20240106_013153.jpg",
+        "images/20240106_013318.jpg",
+        "images/20240106_013427.jpg",
+        "images/20240106_013435.jpg",
+        "images/20240106_013651.jpg",
+        "images/20240106_013822.jpg",
+        "images/20240106_013830.jpg",
+        "images/20240106_102844.heic",
+        "images/20240106_102844.jpg",
+        "images/20240106_102959.heic",
+        "images/20240106_102959.jpg",
+        "images/20240106_103011.heic",
+        "images/20240106_103011.jpg",
+        "images/20240106_103748.heic",
+        "images/20240106_103748.jpg",
+        "images/20240119_163557.heic",
+        "images/20240119_163557.jpg",
+        "images/IMG_1371.HEIC",
+        "images/IMG_1371.HEIC.jpg",
+        "images/IMG_1371.jpg",
+        "images/IMG_1379.HEIC",
+        "images/IMG_1379.HEIC.jpg",
+        "images/IMG_1379.jpg",
+        "images/IMG_1381.HEIC",
+        "images/IMG_1381.HEIC.jpg",
+        "images/IMG_1381.jpg",
+        "images/IMG_1383.HEIC",
+        "images/IMG_1383.HEIC.jpg",
+        "images/IMG_1383.jpg",
+        "images/IMG_1384.HEIC",
+        "images/IMG_1384.HEIC.jpg",
+        "images/IMG_1384.jpg",
+        "images/IMG_1385.HEIC",
+        "images/IMG_1385.HEIC.jpg",
+        "images/IMG_1385.jpg",
+        "images/IMG_1390.HEIC",
+        "images/IMG_1390.HEIC.jpg",
+        "images/IMG_1390.jpg",
+        "images/IMG_1391.HEIC",
+        "images/IMG_1391.HEIC.jpg",
+        "images/IMG_1391.jpg",
+        "images/IMG_1393.HEIC",
+        "images/IMG_1393.HEIC.jpg",
+        "images/IMG_1393.jpg",
+        "images/IMG_1394.HEIC",
+        "images/IMG_1394.HEIC.jpg",
+        "images/IMG_1394.jpg",
+        "images/IMG_1396.HEIC",
+        "images/IMG_1396.HEIC.jpg",
+        "images/IMG_1396.jpg",
+        "images/IMG_2081.jpg",
+        "images/IMG_2134.jpg",
+        "images/IMG_2138.jpg",
+      ];
+
+      const loadedImages = new Map();
+      let clickCount = 0;
+      let imagesPerClick = 3;
+      let lastTrigger = 0;
+
+      const scales = [1.5, 2, 3, 4, 6, 8, 10]; // Sorted for smooth ramp-up
+
+      const MIN_INTERVAL = 100; // milliseconds between key/click triggers
+
+      function preloadImages() {
+        const promises = imageUrls.map((url) => {
+          return new Promise((resolve) => {
+            const img = new Image();
+            img.src = url;
+            img.onload = () => {
+              loadedImages.set(url, url);
+              resolve();
+            };
+            img.onerror = resolve; // Skip errored images
+          });
+        });
+
+        Promise.all(promises).then(() => {
+          document.getElementById("loading").style.display = "none";
+        });
+      }
+
+      const MAX_IMAGES = 50;
+
+      function createImage(x) {
+        // Remove oldest if over limit
+        const activeImages = document.querySelectorAll(".falling-image");
+        if (activeImages.length >= MAX_IMAGES) {
+          activeImages[0].remove(); // kill the oldest instantly
+        }
+
+        const img = document.createElement("img");
+        img.className = "falling-image";
+
+        const selectedUrl =
+          imageUrls[Math.floor(Math.random() * imageUrls.length)];
+        const blobUrl = loadedImages.get(selectedUrl);
+        if (!blobUrl) return;
+
+        img.src = blobUrl;
+
+        const offsetX = (Math.random() - 0.5) * 200;
+        img.style.left = x + offsetX + "px";
+
+        const scale = scales[Math.floor(Math.random() * scales.length)];
+        img.style.setProperty("--scale", scale);
 
         document.body.appendChild(img);
 
-        setTimeout(() => {
-          img.remove();
-        }, 10000); // 10 seconds
-      }
-    }
-
-    document.body.addEventListener('click', (e) => {
-      const clickSound = document.getElementById('clickSound');
-      if (clickSound) {
-        try {
-          clickSound.currentTime = 0;
-          clickSound.volume = 0.5;
-          clickSound.play().catch(() => {});
-        } catch (_) {}
+        // Clean up after 10s if not force-removed earlier
+        setTimeout(() => img.remove(), 10000);
       }
 
-      clickCount++;
-      for (let i = 0; i < imagesPerClick; i++) {
-        setTimeout(() => {
-          createImage(e.clientX);
-        }, i * 100);
-      }
+      // function triggerRain(x) {
+      //   const now = Date.now();
+      //   if (now - lastTrigger < 150) return; // Reduce rate even more for responsiveness
+      //   lastTrigger = now;
 
-      if (clickCount >= 10) {
-        clickCount = 0;
-        imagesPerClick = 3;
-      } else {
-        imagesPerClick++;
-      }
-    });
+      //   const sound = document.getElementById("clickSound");
+      //   if (sound) {
+      //     sound.currentTime = 0;
+      //     sound.volume = 0.5;
+      //     sound.play().catch(() => {});
+      //   }
 
-    async function updateImageList() {
-      try {
-        const response = await fetch('images/');
-        const files = await response.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(files, 'text/html');
-        const links = doc.querySelectorAll('a');
+      //   const imgCount = Math.min(imagesPerClick, 8); // prevent overload
+      //   for (let i = 0; i < imgCount; i++) {
+      //     createImage(x);
+      //   }
 
-        imageUrls = Array.from(links)
-          .map(link => link.href)
-          .filter(href =>
-            href.toLowerCase().endsWith('.jpg') ||
-            href.toLowerCase().endsWith('.jpeg') ||
-            href.toLowerCase().endsWith('.heic')
-          );
+      //   // Grow and reset naturally
+      //   imagesPerClick++;
+      //   if (imagesPerClick > 8) imagesPerClick = 3;
+      // }
 
-        if (imageUrls.length === 0) {
-          imageUrls = ['images/default.jpg'];
+      function triggerRain(x) {
+        const now = Date.now();
+        if (now - lastTrigger < 150) return; // debounce
+        lastTrigger = now;
+
+        const sound = document.getElementById("clickSound");
+        if (sound) {
+          sound.currentTime = 0;
+          sound.volume = 0.5;
+          sound.play().catch(() => {});
         }
-      } catch (error) {
-        console.log('Could not scan directory, using default image');
-      }
-    }
 
-    updateImageList();
-  </script>
-</body>
+        createImage(x); // Only one image per click, always
+
+        // Optional: Cycle through image types or themes if needed
+        imageCycleIndex = (imageCycleIndex + 1) % imageVariants.length;
+      }
+
+      function goFullscreen() {
+        const elem = document.documentElement;
+        const rfs =
+          elem.requestFullscreen ||
+          elem.webkitRequestFullscreen ||
+          elem.msRequestFullscreen;
+        if (rfs) rfs.call(elem).catch(() => {});
+      }
+
+      document.body.addEventListener("click", (e) => {
+        goFullscreen();
+        triggerRain(e.clientX);
+      });
+
+      document.body.addEventListener("keydown", (e) => {
+        goFullscreen();
+        const keyDisplay = document.getElementById("keyDisplay");
+        keyDisplay.textContent =
+          e.key.length === 1 ? e.key.toUpperCase() : e.key;
+        keyDisplay.style.opacity = "1";
+        setTimeout(() => {
+          keyDisplay.style.opacity = "0";
+          triggerRain(window.innerWidth / 2);
+        }, 1500);
+      });
+
+      // Bonus: Trigger rain every 30 seconds using system clock, making it "tick aware"
+      setInterval(() => {
+        const now = new Date();
+        if (now.getSeconds() % 30 === 0) {
+          triggerRain(Math.random() * window.innerWidth);
+        }
+      }, 1000);
+
+      document.addEventListener("contextmenu", (e) => e.preventDefault());
+      window.addEventListener("DOMContentLoaded", preloadImages);
+    </script>
+  </body>
 </html>
