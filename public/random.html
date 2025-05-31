@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Imraan Rainfall</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background-color: #1a1a1a;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        font-family: Arial, sans-serif;
+        user-select: none;
+      }
+
+      .instruction {
+        color: white;
+        font-size: 24px;
+        text-align: center;
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(0, 0, 0, 0.7);
+        padding: 12px 20px;
+        border-radius: 10px;
+        pointer-events: none;
+      }
+
+      .loading {
+        color: white;
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background-color: rgba(0, 0, 0, 0.7);
+        padding: 10px;
+        border-radius: 5px;
+      }
+
+      .falling-image {
+        position: absolute;
+        height: auto;
+        object-fit: cover;
+        border-radius: 10px;
+        pointer-events: none;
+        will-change: transform, opacity;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        animation-duration: 8s;
+        animation-timing-function: linear;
+        animation-fill-mode: forwards;
+      }
+
+      @keyframes fall {
+        0% {
+          transform: translateY(-150px) rotate(0deg);
+          opacity: 0.95;
+        }
+        100% {
+          transform: translateY(100vh) rotate(360deg);
+          opacity: 0.95;
+        }
+      }
+
+      @keyframes fallAndBounce {
+        0% {
+          transform: translateY(-150px) rotate(0deg);
+          opacity: 0.95;
+        }
+        85% {
+          transform: translateY(90vh) scale(1.05);
+        }
+        92% {
+          transform: translateY(85vh) scale(0.98);
+        }
+        100% {
+          transform: translateY(90vh) scale(1);
+        }
+      }
+
+      .key-display {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 160px;
+        color: #ffffff;
+        text-shadow: 0 0 40px #00faff;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s;
+        user-select: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="instruction">
+      Press any key or click to make it rain images for Imraan! 🍼
+    </div>
+    <div
+      class="loading"
+      id="loading"
+    >
+      Loading images...
+    </div>
+    <div
+      class="key-display"
+      id="keyDisplay"
+    ></div>
+
+    <audio
+      id="clickSound"
+      src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAgD4AAAB9AAACABAAZGF0YQAAAAA="
+      preload="auto"
+    ></audio>
+
+    <script>
+      const imageUrls = [];
+      const loadedImages = new Map();
+
+      const MAX_IMAGES = 30;
+
+      async function preloadImages() {
+        try {
+          const res = await fetch("/api/images");
+          const list = await res.json();
+          imageUrls.push(...list);
+
+          const promises = imageUrls.map((url) => {
+            return new Promise((resolve) => {
+              const img = new Image();
+              img.src = url;
+              img.onload = () => {
+                loadedImages.set(url, url);
+                resolve();
+              };
+              img.onerror = resolve;
+            });
+          });
+
+          await Promise.all(promises);
+        } catch (err) {
+          console.error("Failed to preload images:", err);
+        } finally {
+          document.getElementById("loading").style.display = "none";
+        }
+      }
+
+      function createImage(x) {
+        const activeImages = document.querySelectorAll(".falling-image");
+        if (activeImages.length >= MAX_IMAGES) {
+          activeImages[0].remove();
+        }
+
+        const selectedUrl =
+          imageUrls[Math.floor(Math.random() * imageUrls.length)];
+        const blobUrl = loadedImages.get(selectedUrl);
+        if (!blobUrl) return;
+
+        const img = document.createElement("img");
+        img.className = "falling-image";
+        img.src = blobUrl;
+
+        const offsetX = (Math.random() - 0.5) * 200;
+        img.style.left = `${x + offsetX}px`;
+
+        const width = 80 + Math.random() * 100;
+        img.style.width = `${width}px`;
+
+        // Bounce 30% of the time
+        const animation = Math.random() < 0.3 ? "fallAndBounce" : "fall";
+        img.style.animationName = animation;
+
+        if (Math.random() < 0.05) {
+          img.style.boxShadow = "0 0 30px rgba(255, 255, 180, 0.6)";
+        }
+
+        document.body.appendChild(img);
+        setTimeout(() => img.remove(), 8000);
+      }
+
+      function triggerRain(x) {
+        const sound = document.getElementById("clickSound");
+        if (sound) {
+          sound.currentTime = 0;
+          sound.volume = 0.4;
+          sound.play().catch(() => {});
+        }
+
+        createImage(x);
+      }
+
+      function goFullscreen() {
+        const elem = document.documentElement;
+        const rfs =
+          elem.requestFullscreen ||
+          elem.webkitRequestFullscreen ||
+          elem.msRequestFullscreen;
+        if (rfs) rfs.call(elem).catch(() => {});
+      }
+
+      document.body.addEventListener("click", (e) => {
+        goFullscreen();
+        triggerRain(e.clientX);
+      });
+
+      document.body.addEventListener("keydown", (e) => {
+        goFullscreen();
+        const keyDisplay = document.getElementById("keyDisplay");
+        keyDisplay.textContent =
+          e.key.length === 1 ? e.key.toUpperCase() : e.key;
+        keyDisplay.style.opacity = "1";
+        setTimeout(() => {
+          keyDisplay.style.opacity = "0";
+          triggerRain(window.innerWidth / 2);
+        }, 1500);
+      });
+
+      setInterval(() => {
+        if (new Date().getSeconds() % 30 === 0) {
+          triggerRain(Math.random() * window.innerWidth);
+        }
+      }, 1000);
+
+      document.addEventListener("contextmenu", (e) => e.preventDefault());
+      window.addEventListener("DOMContentLoaded", preloadImages);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "imraan",
+  "version": "1.0.0",
+  "description": "This is a fun interactive webpage that creates a rainfall effect with images when you click on the screen.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
