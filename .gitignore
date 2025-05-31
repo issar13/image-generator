@@ -4,6 +4,7 @@
 /build
 /dev
 /docker-cache
+/images
 
 # Logs
 logs

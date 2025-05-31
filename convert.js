@@ -1,37 +1,39 @@
 const fs = require("fs");
 const path = require("path");
-const heicConvert = require("heic-convert");
+const sharp = require("sharp");
 
-const inputDir = "./images"; // or whatever path you're using
+const inputDir = "./public/images";
+const outputDir = path.join(inputDir, "compressed-webp");
 
-function getOutputPath(filePath) {
-  const ext = path.extname(filePath);
-  const base = path.basename(filePath, ext);
-  return path.join(inputDir, `${base}.jpg`);
+// Ensure output directory exists
+if (!fs.existsSync(outputDir)) {
+  fs.mkdirSync(outputDir, { recursive: true });
 }
 
-async function convertHeicToJpg(filePath) {
-  const outputPath = getOutputPath(filePath);
+function isImageFile(fileName) {
+  const ext = path.extname(fileName).toLowerCase();
+  return [".jpg", ".jpeg", ".png"].includes(ext);
+}
 
-  if (fs.existsSync(outputPath)) {
-    console.log(`✅ Skipped (already exists): ${path.basename(outputPath)}`);
-    return;
-  }
-
+async function compressToWebp(inputFile, outputFile) {
   try {
-    const inputBuffer = fs.readFileSync(filePath);
-    const outputBuffer = await heicConvert({
-      buffer: inputBuffer,
-      format: "JPEG",
-      quality: 0.8,
-    });
+    const stats = fs.statSync(inputFile);
+    if (stats.size < 100 * 1024) {
+      console.log(`⚠️ Skipped (already small): ${path.basename(inputFile)}`);
+      return;
+    }
 
-    fs.writeFileSync(outputPath, outputBuffer);
+    await sharp(inputFile)
+      .resize({ width: 1280, height: 1280, fit: "inside" }) // Optional resizing
+      .webp({ quality: 60 }) // Reduce quality to shrink further
+      .toFile(outputFile);
+
+    const newSize = fs.statSync(outputFile).size / 1024;
     console.log(
-      `🎉 Converted: ${path.basename(filePath)} → ${path.basename(outputPath)}`
+      `✅ Compressed: ${path.basename(inputFile)} → ${Math.round(newSize)} KB`
     );
   } catch (err) {
-    console.error(`❌ Failed: ${filePath}`, err.message);
+    console.error(`❌ Failed to compress ${inputFile}`, err.message);
   }
 }
 
@@ -39,18 +41,17 @@ async function run() {
   console.log(`📁 Scanning folder: ${path.resolve(inputDir)}`);
   const files = fs.readdirSync(inputDir);
 
-  const heicFiles = files.filter((file) =>
-    file.toLowerCase().endsWith(".heic")
-  );
+  const imageFiles = files.filter(isImageFile);
+  console.log(`🖼️ Found ${imageFiles.length} image(s) to compress.`);
 
-  console.log(`📸 Found ${heicFiles.length} HEIC file(s).`);
-
-  for (const file of heicFiles) {
-    await convertHeicToJpg(path.join(inputDir, file));
+  for (const file of imageFiles) {
+    const inputFile = path.join(inputDir, file);
+    const outputFile = path.join(outputDir, path.parse(file).name + ".webp");
+    await compressToWebp(inputFile, outputFile);
   }
 
-  if (heicFiles.length === 0) {
-    console.log("⚠️ No HEIC files found.");
+  if (imageFiles.length === 0) {
+    console.log("⚠️ No image files found.");
   }
 }
 
