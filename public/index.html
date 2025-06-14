@@ -117,7 +117,7 @@
       src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAgD4AAAB9AAACABAAZGF0YQAAAAA="
       preload="auto"
     ></audio>
-
+    <!-- 
     <script>
       const imageUrls = [];
       const loadedImages = new Map();
@@ -267,6 +267,199 @@
       }, 1000);
 
       // Cleanup any orphaned images periodically
+      setInterval(() => {
+        const images = document.querySelectorAll(".falling-image");
+        if (images.length > MAX_IMAGES) {
+          for (let i = 0; i < images.length - MAX_IMAGES; i++) {
+            images[i].remove();
+          }
+        }
+      }, 5000);
+
+      document.addEventListener("contextmenu", (e) => e.preventDefault());
+      window.addEventListener("DOMContentLoaded", preloadImages);
+    </script> -->
+    <script>
+      const imageUrls = [
+        "/images/20231008_141636.webp",
+        "/images/20231105_082243.webp",
+        "/images/20231105_184138.webp",
+        "/images/20231209_150444.webp",
+        "/images/20231220_214731.webp",
+        "/images/20231220_214745.webp",
+        "/images/20231220_214806.webp",
+        "/images/20231224_154627.webp",
+        "/images/20231224_154930.webp",
+        "/images/20231227_212603.webp",
+        "/images/20231227_212639.webp",
+        "/images/20231227_212647.webp",
+        "/images/20231227_212652.webp",
+        "/images/20231227_212657.webp",
+        "/images/20231227_212909.webp",
+        "/images/20231227_212927.webp",
+        "/images/20231227_213107.webp",
+        "/images/20231227_213110.webp",
+        "/images/20231227_213113.webp",
+        "/images/20231228_162715.webp",
+        "/images/20231228_162800.webp",
+        "/images/20231228_163940.webp",
+        "/images/20231228_164037.webp",
+        "/images/20231229_141518.webp",
+        "/images/20240101_104342.webp",
+        "/images/20240101_104400.webp",
+        "/images/20240101_104416.webp",
+        "/images/20240101_104421.webp",
+        "/images/20240101_104428.webp",
+        "/images/20240106_012912.webp",
+        "/images/20240106_012921.webp",
+        "/images/20240106_012929.webp",
+        "/images/20240106_013038.webp",
+        "/images/20240106_013153.webp",
+        "/images/20240106_013318.webp",
+        "/images/20240106_013427.webp",
+        "/images/20240106_013435.webp",
+        "/images/20240106_013651.webp",
+        "/images/20240106_013822.webp",
+        "/images/20240106_013830.webp",
+        "/images/20240106_102844.webp",
+        "/images/20240106_102959.webp",
+        "/images/20240106_103011.webp",
+        "/images/20240106_103748.webp",
+        "/images/20240119_163557.webp",
+        "/images/IMG_1371.HEIC.webp",
+        "/images/IMG_1371.webp",
+        "/images/IMG_1379.HEIC.webp",
+        "/images/IMG_1379.webp",
+        "/images/IMG_1381.HEIC.webp",
+        "/images/IMG_1381.webp",
+        "/images/IMG_1383.HEIC.webp",
+        "/images/IMG_1383.webp",
+        "/images/IMG_1384.HEIC.webp",
+        "/images/IMG_1384.webp",
+        "/images/IMG_1385.HEIC.webp",
+        "/images/IMG_1385.webp",
+        "/images/IMG_1390.HEIC.webp",
+        "/images/IMG_1390.webp",
+        "/images/IMG_1391.HEIC.webp",
+        "/images/IMG_1391.webp",
+        "/images/IMG_1393.HEIC.webp",
+        "/images/IMG_1393.webp",
+        "/images/IMG_1394.HEIC.webp",
+        "/images/IMG_1394.webp",
+        "/images/IMG_1396.HEIC.webp",
+        "/images/IMG_1396.webp",
+        "/images/IMG_2081.webp",
+        "/images/IMG_2134.webp",
+        "/images/IMG_2138.webp",
+      ];
+
+      const loadedImages = new Map();
+      const MAX_IMAGES = 15;
+      const scales = [1.5, 2, 2.5, 3, 4];
+      const MIN_INTERVAL = 150;
+
+      let lastTrigger = 0;
+      let animationFrame = null;
+
+      function preloadImages() {
+        let loaded = 0;
+        imageUrls.forEach((url) => {
+          const img = new Image();
+          img.src = url;
+          img.onload = () => {
+            loadedImages.set(url, url);
+            loaded++;
+            if (loaded === imageUrls.length) {
+              document.getElementById("loading").style.display = "none";
+            }
+          };
+          img.onerror = () => {
+            loaded++;
+            if (loaded === imageUrls.length) {
+              document.getElementById("loading").style.display = "none";
+            }
+          };
+        });
+      }
+
+      function createImage(x) {
+        const activeImages = document.querySelectorAll(".falling-image");
+        if (activeImages.length >= MAX_IMAGES) {
+          for (let i = 0; i < activeImages.length - MAX_IMAGES + 1; i++) {
+            activeImages[i].remove();
+          }
+        }
+
+        const img = document.createElement("img");
+        img.className = "falling-image";
+
+        const selectedUrl =
+          imageUrls[Math.floor(Math.random() * imageUrls.length)];
+        const blobUrl = loadedImages.get(selectedUrl);
+        if (!blobUrl) return;
+
+        img.src = blobUrl;
+
+        const offsetX = (Math.random() - 0.5) * 200;
+        img.style.left =
+          Math.max(0, Math.min(window.innerWidth - 150, x + offsetX)) + "px";
+
+        const scale = scales[Math.floor(Math.random() * scales.length)];
+        img.style.setProperty("--scale", scale);
+
+        document.body.appendChild(img);
+        setTimeout(() => img.remove(), 8500);
+      }
+
+      function triggerRain(x) {
+        const now = Date.now();
+        if (now - lastTrigger < MIN_INTERVAL) return;
+        lastTrigger = now;
+
+        const sound = document.getElementById("clickSound");
+        if (sound) {
+          sound.currentTime = 0;
+          sound.volume = 0.3;
+          sound.play().catch(() => {});
+        }
+
+        if (animationFrame) cancelAnimationFrame(animationFrame);
+        animationFrame = requestAnimationFrame(() => {
+          createImage(x);
+          animationFrame = null;
+        });
+      }
+
+      function goFullscreen() {
+        const elem = document.documentElement;
+        const rfs =
+          elem.requestFullscreen ||
+          elem.webkitRequestFullscreen ||
+          elem.msRequestFullscreen;
+        if (rfs) rfs.call(elem).catch(() => {});
+      }
+
+      document.body.addEventListener("click", (e) => {
+        goFullscreen();
+        triggerRain(e.clientX);
+      });
+
+      document.body.addEventListener("keydown", (e) => {
+        goFullscreen();
+        const keyDisplay = document.getElementById("keyDisplay");
+        keyDisplay.textContent =
+          e.key.length === 1 ? e.key.toUpperCase() : e.key;
+        keyDisplay.style.opacity = "1";
+        setTimeout(() => {
+          keyDisplay.style.opacity = "0";
+          triggerRain(window.innerWidth / 2);
+        }, 1000);
+      });
+
+      setInterval(() => {
+        triggerRain(Math.random() * window.innerWidth);
+      }, 45000);
+
       setInterval(() => {
         const images = document.querySelectorAll(".falling-image");
         if (images.length > MAX_IMAGES) {
