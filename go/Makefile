@@ -1,4 +1,4 @@
-# Makefile for Imraan Rainfall Go Application
+# Makefile for image Rainfall Go Application
 
 .PHONY: help install run build convert clean test
 
@@ -23,7 +23,7 @@ run:
 
 # Build the application
 build:
-	go build -o imraan-server main.go
+	go build -o image-server main.go
 
 # Run image conversion
 convert:
@@ -31,7 +31,7 @@ convert:
 
 # Clean build artifacts
 clean:
-	rm -f imraan-server
+	rm -f image-server
 	go clean
 
 # Run tests (if any)

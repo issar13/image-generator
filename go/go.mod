@@ -1,4 +1,4 @@
-module imraan-go
+module image-go
 
 go 1.21
 

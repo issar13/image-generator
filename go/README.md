@@ -1,6 +1,6 @@
-# Imraan Rainfall - Go Version
+# image Rainfall - Go Version
 
-This is a Go implementation of the Imraan interactive rainfall effect web application.
+This is a Go implementation of the image interactive rainfall effect web application.
 
 ## Features
 
@@ -82,13 +82,13 @@ This will:
 To build a standalone executable:
 
 ```bash
-go build -o imraan-server main.go
+go build -o image-server main.go
 ```
 
 Then run:
 
 ```bash
-./imraan-server
+./image-server
 ```
 
 ## Differences from Node.js Version

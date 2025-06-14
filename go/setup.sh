@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Setup script for Imraan Rainfall Go Application
+# Setup script for image Rainfall Go Application
 
 set -e
 
-echo "🚀 Setting up Imraan Rainfall Go Application..."
+echo "🚀 Setting up image Rainfall Go Application..."
 
 # Check if Go is installed
 if ! command -v go &> /dev/null; then
@@ -30,12 +30,12 @@ go mod tidy
 
 # Build the application
 echo "🔨 Building application..."
-go build -o imraan-server main.go
+go build -o image-server main.go
 
 echo "✅ Setup complete!"
 echo ""
 echo "To run the application:"
-echo "  ./imraan-server"
+echo "  ./image-server"
 echo ""
 echo "Or use make commands:"
 echo "  make run      # Run development server"
