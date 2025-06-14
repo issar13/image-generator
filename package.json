@@ -1,5 +1,5 @@
 {
-  "name": "imraan",
+  "name": "image",
   "version": "1.0.0",
   "description": "This is a fun interactive webpage that creates a rainfall effect with images when you click on the screen.",
   "main": "app.js",

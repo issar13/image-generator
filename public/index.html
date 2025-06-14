@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0"
     />
-    <title>Imraan Rainfall</title>
+    <title>image Rainfall</title>
     <style>
       body {
         margin: 0;
@@ -99,7 +99,7 @@
 
   <body>
     <div class="instruction">
-      Press any key or click to make it rain images for Imraan! 🍼
+      Press any key or click to make it rain images for image! 🍼
     </div>
     <div
       class="loading"
@@ -354,8 +354,8 @@
       ];
 
       const loadedImages = new Map();
-      const MAX_IMAGES = 15;
-      const scales = [1.5, 2, 2.5, 3, 4];
+      const MAX_IMAGES = 35;
+      const scales = [1.5, 2, 2.5, 3, 4,8,10,12,14,16,18,20]; // Added more scale options
       const MIN_INTERVAL = 150;
 
       let lastTrigger = 0;
@@ -449,6 +449,7 @@
         const keyDisplay = document.getElementById("keyDisplay");
         keyDisplay.textContent =
           e.key.length === 1 ? e.key.toUpperCase() : e.key;
+        keyDisplay.style.fontSize = "860px"; // Increased font size
         keyDisplay.style.opacity = "1";
         setTimeout(() => {
           keyDisplay.style.opacity = "0";

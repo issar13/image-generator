@@ -56,7 +56,7 @@ lerna-debug.log*
 .vscode/extensions.json
 
 # Go binaries and build artifacts
-go/imraan-server
+go/image-server
 go/convert
 *.exe
 *.exe~
